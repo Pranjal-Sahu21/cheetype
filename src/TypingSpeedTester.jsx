@@ -212,6 +212,8 @@ export default function TypingSpeedTester() {
   const captureRef = useRef(null);
   const activeWordRef = useRef(null);
   const timerRef = useRef(null);
+  const prevInputRef = useRef("");
+  const composingRef = useRef(false);
 
   const resetGame = (count = wordCount) => {
     setWordList(generateWords(count));
@@ -225,15 +227,14 @@ export default function TypingSpeedTester() {
     setCpm(0);
     setAccuracy(100);
     setElapsed(0);
-
     totalChars.current = 0;
     wrongChars.current = 0;
     correctChars.current = 0;
     correctWords.current = 0;
     totalWords.current = 0;
-
     clearInterval(timerRef.current);
     requestAnimationFrame(() => captureRef.current?.focus());
+    prevInputRef.current = "";
   };
 
   useEffect(() => {
@@ -270,37 +271,73 @@ export default function TypingSpeedTester() {
     resetGame(newCount);
   };
 
-  const submitWord = (typed) => {
-    const target = wordList[currentWordIndex] || "";
-    const maxLen = Math.max(typed.length, target.length);
-    for (let i = 0; i < maxLen; i++) {
-      if (typed[i] === target[i]) correctChars.current++;
-      else wrongChars.current++;
+  const processTokens = (tokens) => {
+    let next = currentWordIndex;
+    for (let i = 0; i < tokens.length; i++) {
+      if (next >= wordList.length) break;
+      const typed = tokens[i];
+      const target = wordList[next] || "";
+      const maxLen = Math.max(typed.length, target.length);
+      for (let j = 0; j < maxLen; j++) {
+        if (typed[j] === target[j]) correctChars.current++;
+        else wrongChars.current++;
+      }
+      totalWords.current++;
+      if (typed === target) correctWords.current++;
+      totalChars.current += typed.length;
+      next++;
     }
-    totalWords.current++;
-    if (typed === target) correctWords.current++;
-    totalChars.current += typed.length;
-    const next = currentWordIndex + 1;
     setCurrentWordIndex(next);
-    setInput("");
     updateLiveStats();
-    if (next === wordList.length) finishTest();
+    if (next >= wordList.length) finishTest();
   };
 
   const handleInput = (e) => {
     const value = e.target.value;
+    if (composingRef.current) {
+      setInput(value);
+      prevInputRef.current = value;
+      return;
+    }
     if (!started) {
       setStarted(true);
       setStartTime(Date.now());
     }
-    if (/\s/.test(value)) {
-      const typed = value.trim();
-      e.target.value = "";
-      submitWord(typed);
-    } else {
+    if (value.length < prevInputRef.current.length) {
       setInput(value);
+      prevInputRef.current = value;
       updateLiveStats();
+      return;
     }
+    const endsWithSpace = /\s$/.test(value);
+    const parts = value.split(/\s+/);
+    let fragment = "";
+    let complete = [];
+    if (endsWithSpace) {
+      complete = parts.filter(Boolean);
+      fragment = "";
+    } else {
+      if (parts.length > 1) {
+        fragment = parts.pop();
+        complete = parts.filter(Boolean);
+      } else {
+        fragment = parts[0] || "";
+        complete = [];
+      }
+    }
+    if (complete.length > 0) {
+      processTokens(complete);
+    }
+    setInput(fragment);
+    prevInputRef.current = fragment;
+    requestAnimationFrame(() => {
+      const el = captureRef.current;
+      if (el) {
+        try {
+          el.setSelectionRange(el.value.length, el.value.length);
+        } catch (err) {}
+      }
+    });
   };
 
   const handleKeyDown = (e) => {
@@ -312,7 +349,25 @@ export default function TypingSpeedTester() {
     }
     if (e.key === "Enter") {
       e.preventDefault();
-      if (input.trim()) submitWord(input.trim());
+      const trimmed = input.trim();
+      if (trimmed) {
+        processTokens([trimmed]);
+        setInput("");
+        prevInputRef.current = "";
+      }
+    }
+  };
+
+  const handleCompositionStart = () => {
+    composingRef.current = true;
+  };
+
+  const handleCompositionEnd = () => {
+    composingRef.current = false;
+    const el = captureRef.current;
+    if (el) {
+      const eventLike = { target: el };
+      handleInput(eventLike);
     }
   };
 
@@ -357,6 +412,8 @@ export default function TypingSpeedTester() {
         value={input}
         onInput={handleInput}
         onKeyDown={handleKeyDown}
+        onCompositionStart={handleCompositionStart}
+        onCompositionEnd={handleCompositionEnd}
         className="hidden-input"
         autoFocus
         autoComplete="off"
