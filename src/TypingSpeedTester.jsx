@@ -424,7 +424,9 @@ export default function TypingSpeedTester() {
         enterKeyHint="done"
       />
 
-      <div className="mt-logo no-focus">CheeType</div>
+      <div className="mt-logo no-focus">
+        <i class="fa-solid fa-keyboard"></i> CheeType
+      </div>
 
       <div className="mt-container">
         <div className="mt-topbar no-focus">
@@ -513,7 +515,7 @@ export default function TypingSpeedTester() {
 
       <div className="mt-restart no-focus">
         <button className="btn" onClick={() => resetGame(wordCount)}>
-          Restart
+          Restart  <i class="fa-solid fa-rotate-right"></i>
         </button>
       </div>
     </div>
