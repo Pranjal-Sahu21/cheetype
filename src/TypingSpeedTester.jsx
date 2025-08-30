@@ -348,13 +348,15 @@ export default function TypingSpeedTester() {
 
   return (
     <div className="mt-root" onClick={handleRootClick}>
-      <div
+      <input
         ref={captureRef}
-        tabIndex={0}
-        onKeyDown={handleKeyDown}
-        className="hidden-capture"
-        aria-label="typing-capture"
-        role="textbox"
+        type="text"
+        value={input}
+        onKeyDown={handleKeyDown} 
+        className="hidden-input"
+        autoFocus
+        autoComplete="off"
+        spellCheck="false"
       />
 
       <div className="mt-logo no-focus">CheeType</div>
