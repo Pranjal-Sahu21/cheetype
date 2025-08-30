@@ -301,8 +301,6 @@ export default function TypingSpeedTester() {
       if (next === wordList.length) finishTest();
     } else if (e.key === "Backspace") {
       setInput((prev) => prev.slice(0, -1));
-    } else if (e.key.length === 1 && !e.metaKey && !e.ctrlKey) {
-      setInput((prev) => prev + e.key);
     }
 
     updateLiveStats();
@@ -352,7 +350,8 @@ export default function TypingSpeedTester() {
         ref={captureRef}
         type="text"
         value={input}
-        onKeyDown={handleKeyDown} 
+        onInput={(e) => setInput(e.target.value)}
+        onKeyDown={handleKeyDown}
         className="hidden-input"
         autoFocus
         autoComplete="off"
