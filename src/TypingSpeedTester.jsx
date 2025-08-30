@@ -270,51 +270,59 @@ export default function TypingSpeedTester() {
     resetGame(newCount);
   };
 
-  const handleKeyDown = (e) => {
-    if (finished) return;
-    if (e.ctrlKey || e.altKey || e.metaKey) return;
+  const submitWord = (typed) => {
+    const target = wordList[currentWordIndex] || "";
+    const maxLen = Math.max(typed.length, target.length);
+    for (let i = 0; i < maxLen; i++) {
+      if (typed[i] === target[i]) correctChars.current++;
+      else wrongChars.current++;
+    }
+    totalWords.current++;
+    if (typed === target) correctWords.current++;
+    totalChars.current += typed.length;
+    const next = currentWordIndex + 1;
+    setCurrentWordIndex(next);
+    setInput("");
+    updateLiveStats();
+    if (next === wordList.length) finishTest();
+  };
 
+  const handleInput = (e) => {
+    const value = e.target.value;
     if (!started) {
       setStarted(true);
       setStartTime(Date.now());
     }
-
-    if (e.key === " ") {
-      e.preventDefault();
-      const trimmed = input.trim();
-      const target = wordList[currentWordIndex] || "";
-
-      const maxLen = Math.max(trimmed.length, target.length);
-      for (let i = 0; i < maxLen; i++) {
-        if (trimmed[i] === target[i]) correctChars.current++;
-        else wrongChars.current++;
-      }
-
-      totalWords.current++;
-      if (trimmed === target) correctWords.current++;
-
-      totalChars.current += trimmed.length;
-
-      const next = currentWordIndex + 1;
-      setCurrentWordIndex(next);
-      setInput("");
-      if (next === wordList.length) finishTest();
-    } else if (e.key === "Backspace") {
-      setInput((prev) => prev.slice(0, -1));
+    if (/\s/.test(value)) {
+      const typed = value.trim();
+      e.target.value = "";
+      submitWord(typed);
+    } else {
+      setInput(value);
+      updateLiveStats();
     }
+  };
 
-    updateLiveStats();
+  const handleKeyDown = (e) => {
+    if (finished) return;
+    if (e.ctrlKey || e.altKey || e.metaKey) return;
+    if (!started) {
+      setStarted(true);
+      setStartTime(Date.now());
+    }
+    if (e.key === "Enter") {
+      e.preventDefault();
+      if (input.trim()) submitWord(input.trim());
+    }
   };
 
   const updateLiveStats = () => {
     if (!started || !startTime) return;
     const now = Date.now();
     const minutes = Math.max((now - startTime) / 1000 / 60, 1 / 600);
-
     setWpm(Math.round(correctWords.current / minutes));
     setRawWpm(Math.round(wordCount / minutes));
     setCpm(Math.round(correctChars.current / minutes));
-
     const denom = correctChars.current + wrongChars.current;
     setAccuracy(
       denom > 0 ? Math.round((correctChars.current / denom) * 100) : 100
@@ -324,16 +332,13 @@ export default function TypingSpeedTester() {
   const finishTest = () => {
     const endTime = Date.now();
     const minutes = Math.max((endTime - startTime) / 1000 / 60, 1 / 600);
-
     setWpm(Math.round(correctWords.current / minutes));
     setRawWpm(Math.round(wordCount / minutes));
     setCpm(Math.round(correctChars.current / minutes));
-
     const denom = correctChars.current + wrongChars.current;
     setAccuracy(
       denom > 0 ? Math.round((correctChars.current / denom) * 100) : 100
     );
-
     setFinished(true);
     clearInterval(timerRef.current);
   };
@@ -350,12 +355,16 @@ export default function TypingSpeedTester() {
         ref={captureRef}
         type="text"
         value={input}
-        onInput={(e) => setInput(e.target.value)}
+        onInput={handleInput}
         onKeyDown={handleKeyDown}
         className="hidden-input"
         autoFocus
         autoComplete="off"
+        autoCorrect="off"
+        autoCapitalize="none"
         spellCheck="false"
+        inputMode="text"
+        enterKeyHint="done"
       />
 
       <div className="mt-logo no-focus">CheeType</div>
