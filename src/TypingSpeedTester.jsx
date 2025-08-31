@@ -427,6 +427,7 @@ export default function TypingSpeedTester() {
       <div className="mt-logo no-focus">
         <i class="fa-solid fa-keyboard"></i> CheeType
       </div>
+      <div className="mt-tagline no-focus">type with the speed of a <span className="cheetah">cheetah</span></div>
 
       <div className="mt-container">
         <div className="mt-topbar no-focus">

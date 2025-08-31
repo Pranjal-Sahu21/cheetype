@@ -337,4 +337,35 @@ body {
   transform: translateY(-4px);
   box-shadow: 0 10px 24px rgba(0, 0, 0, 0.45), 0 0 12px rgba(255, 213, 79, 0.2);
 }
+.cheetah {
+  color: #fbc02d;
+}
+.mt-tagline {
+  font-size: 18px;
+  text-align: center;
+  color: gray;
+  margin-top: -28px;
+  margin-bottom: 108px;
+  font-family: "Roboto Mono", monospace;
+  white-space: nowrap;
+  overflow: hidden;
+  border-right: 2px solid var(--accent);
+  width: 0;
+  animation: typing 2s steps(25, end) forwards, blink 0.8s step-end infinite;
+}
+
+@keyframes typing {
+  from {
+    width: 0;
+  }
+  to {
+    width: 320px; 
+  }
+}
+
+@keyframes blink {
+  50% {
+    border-color: transparent;
+  }
+}
 
