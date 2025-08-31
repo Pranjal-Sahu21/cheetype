@@ -237,40 +237,18 @@ export default function TypingSpeedTester() {
     prevInputRef.current = "";
   };
 
-  useEffect(() => {
-    resetGame(wordCount);
-  }, []);
-
-  useEffect(() => {
-    if (activeWordRef.current) {
-      activeWordRef.current.scrollIntoView({
-        behavior: "smooth",
-        block: "center",
-        inline: "nearest",
-      });
-    }
-  }, [currentWordIndex]);
-
-  useEffect(() => {
-    if (started && !finished) {
-      timerRef.current = setInterval(() => {
-        setElapsed(Math.floor((Date.now() - startTime) / 1000));
-      }, 1000);
-    }
-    return () => clearInterval(timerRef.current);
-  }, [started, startTime, finished]);
-
+  
   const handleRootClick = (e) => {
     if (e.target && e.target.closest && e.target.closest(".no-focus")) return;
     captureRef.current?.focus();
   };
-
+  
   const handleWordCountChange = (e) => {
     const newCount = Number(e.target.value);
     setWordCount(newCount);
     resetGame(newCount);
   };
-
+  
   const processTokens = (tokens) => {
     let next = currentWordIndex;
     for (let i = 0; i < tokens.length; i++) {
@@ -291,7 +269,7 @@ export default function TypingSpeedTester() {
     updateLiveStats();
     if (next >= wordList.length) finishTest();
   };
-
+  
   const handleInput = (e) => {
     const value = e.target.value;
     if (composingRef.current) {
@@ -339,7 +317,7 @@ export default function TypingSpeedTester() {
       }
     });
   };
-
+  
   const handleKeyDown = (e) => {
     if (finished) return;
     if (e.ctrlKey || e.altKey || e.metaKey) return;
@@ -357,11 +335,11 @@ export default function TypingSpeedTester() {
       }
     }
   };
-
+  
   const handleCompositionStart = () => {
     composingRef.current = true;
   };
-
+  
   const handleCompositionEnd = () => {
     composingRef.current = false;
     const el = captureRef.current;
@@ -370,7 +348,7 @@ export default function TypingSpeedTester() {
       handleInput(eventLike);
     }
   };
-
+  
   const updateLiveStats = () => {
     if (!started || !startTime) return;
     const now = Date.now();
@@ -383,7 +361,7 @@ export default function TypingSpeedTester() {
       denom > 0 ? Math.round((correctChars.current / denom) * 100) : 100
     );
   };
-
+  
   const finishTest = () => {
     const endTime = Date.now();
     const minutes = Math.max((endTime - startTime) / 1000 / 60, 1 / 600);
@@ -397,12 +375,34 @@ export default function TypingSpeedTester() {
     setFinished(true);
     clearInterval(timerRef.current);
   };
-
+  
   const formatTime = (seconds) => {
     const m = Math.floor(seconds / 60);
     const s = seconds % 60;
     return `${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`;
   };
+  useEffect(() => {
+    resetGame(wordCount);
+  }, []);
+
+  useEffect(() => {
+    if (activeWordRef.current) {
+      activeWordRef.current.scrollIntoView({
+        behavior: "smooth",
+        block: "center",
+        inline: "nearest",
+      });
+    }
+  }, [currentWordIndex]);
+
+  useEffect(() => {
+    if (started && !finished) {
+      timerRef.current = setInterval(() => {
+        setElapsed(Math.floor((Date.now() - startTime) / 1000));
+      }, 1000);
+    }
+    return () => clearInterval(timerRef.current);
+  }, [started, startTime, finished]);
 
   return (
     <div className="mt-root" onClick={handleRootClick}>
