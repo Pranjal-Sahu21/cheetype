@@ -515,7 +515,7 @@ export default function TypingSpeedTester() {
 
       <div className="mt-restart no-focus">
         <button className="btn" onClick={() => resetGame(wordCount)}>
-          Restart  <i class="fa-solid fa-rotate-right"></i>
+          Restart <i class="fa-solid fa-rotate-right"></i>
         </button>
       </div>
     </div>
